@@ -1,0 +1,43 @@
+import enum
+import queue
+import time
+from collections import defaultdict
+
+import xmltodict    # Have to install using -> pip install xmltodict
+import pprint
+
+class assest_destiny(enum.Enum):
+    BUY = 0
+    SELL = 1
+
+class OrderBook(object):
+    def _init_(self):
+        """ Orders stored as two defaultdicts of {price:[orders at price]}
+            Orders sent to OrderBook through OrderBook.unprocessed_orders queue
+        """
+        self.sell_prices = []
+        self.sell_volume = []
+        self.buy_prices = []
+        self.buy_volume = []
+        self.sell = defaultdict(list)
+        self.buy = defaultdict(list)
+        self.unprocessed_orders = queue.Queue()
+        self.trades = queue.Queue()
+        self.order_id = 0
+
+#? Converting xml to dictionary  
+# Open the file and read the contents
+with open('path/to/file/orders.xml', 'r', encoding='utf-8') as file:
+    my_xml = file.read()
+  
+# Use xmltodict to parse and convert 
+# the XML document
+my_dict = xmltodict.parse(my_xml)
+
+ob = OrderBook()
+
+for order in my_dict:
+    print(order)
+    ob.unprocessed_orders.put(order)
+while not ob.unprocessed_orders.empty():
+    ob.process_order(ob.unprocessed_orders.get())
